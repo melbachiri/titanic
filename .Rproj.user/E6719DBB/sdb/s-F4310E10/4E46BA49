@@ -1,0 +1,18 @@
+{
+    "contents" : "library(randomForest)\nsetwd(\"C:\\\\Dev\\\\DataScience\\\\titanic\")\n\n# Ne pas convertir les chaines de caractères en factors\ntrain <- read.csv(\"train.csv\", stringsAsFactors = FALSE) # survived\ntest <- read.csv(\"test.csv\", stringsAsFactors = FALSE)   # non survived\n\n# Median of Age\nmedian(train, na.rm = TRUE)\nmedian(test, na.rm = TRUE)\n\ntrain$isTrainSet <- TRUE\ntest$isTrainSet <- FALSE\n\ntest$Survived <- NA\n\n# combine the train/test\nfull <- rbind(train,test)\n\n# rbind is done correctly?\ntable(full$isTrainSet)\n\n# cleaning\n\n# Port d'embarquement\n# Deux personnes sans port d'embarcation\n# Répartir de façon intelligemment\ntable(full$Embarked) \n\n# La valeur de la colonne Embarked \n# Afficher les valeurs de cette colonne uniquement\n# Remplacer le port d'embarquation duquel a été embarqué le plus grand nombre\nfull[full$Embarked == '', \"Embarked\"] <- 'S'\n\n# Age\n\ntable(is.na(full$Age))\nmedian.age <- median(full$Age, na.rm = TRUE)\nfull[is.na(full$Age)==TRUE, \"Age\"] <- median.age*(3/2)\ntable(is.na(full$Age))\n\n\n# Fare\n\ntable(is.na(full$Fare))\nmedian.fare <- median(full$Fare, na.rm = TRUE)\nfull[is.na(full$Fare)==TRUE, \"Fare\"] <- median.fare\ntable(is.na(full$Fare))\n\n# Categorial casting\n# Do not cast Survived because you will lose the binary classification (3)\n\nfull$Pclass <- as.factor(full$Pclass)\nfull$Sex <- as.factor(full$Sex)\nfull$Embarked <- as.factor(full$Embarked)\n\n\n\n# Séparation des deux ensembles\n\ntrain = full[full$isTrainSet==TRUE,]\ntest = full[full$isTrainSet==FALSE,]\n\n\n\n# Cast the Survived variable (0/1)\ntrain$Survived <- as.factor(train$Survived)\n\n\nsurvived.eqn <- \"Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked\"\n\nsurvived.formula <- as.formula(survived.eqn)\n\n#install.packages(\"randomForest\")\n\n\nmodel1 <- randomForest(survived.formula, data = train)\n\nmodel2 <- glm(survived.formula,data=train, family = binomial())\n\nfeatures.eqn <-\"Pclass + Sex + Age + SibSp + Parch + Fare + Embarked\"\nSurvived1 <- predict(model1,newdata=test)\nSurvived2 <- predict(model2,newdata=test, type=\"response\")\nSurvived2[Survived2>0.50] <- 1\nSurvived2[Survived2<=0.50] <- 0\n\n\ntable(Survived1 == Survived2)\n\n\nPassengerId <- test$PassengerId\noutput.df1 <- as.data.frame(PassengerId)\noutput.df1$Survived <- Survived1\n\noutput.df2 <- as.data.frame(PassengerId)\noutput.df2$Survived <- Survived2\n\nwrite.csv(output.df1, file=\"kaggle_Survived1.csv\", row.names = FALSE)\nwrite.csv(output.df2, file=\"kaggle_Survived2.csv\", row.names = FALSE)\n\n\n\n",
+    "created" : 1484679737113.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2568946836",
+    "id" : "4E46BA49",
+    "lastKnownWriteTime" : 1484692480,
+    "path" : "C:/Dev/DataScience/titanic/main.R",
+    "project_path" : "main.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "type" : "r_source"
+}
